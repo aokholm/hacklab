@@ -1,7 +1,7 @@
 package com.vaavud.serial;
 
-import com.vaavud.ars.BaseSensor;
-import com.vaavud.ars.SensorListener;
+import com.vaavud.sensor.BaseSensor;
+import com.vaavud.sensor.SensorListener;
 import com.vaavud.serial.internal.SerialPortController;
 
 public class SerialSensor extends BaseSensor {

@@ -1,7 +1,7 @@
 package com.vaavud.serial.internal;
 
-import com.vaavud.ars.SensorType;
-import com.vaavud.ars.SensorEvent;
+import com.vaavud.sensor.SensorEvent;
+import com.vaavud.sensor.SensorType;
 
 public class Analyser {
 	

@@ -6,8 +6,8 @@ import jssc.SerialPortEventListener;
 import jssc.SerialPortException;
 import jssc.SerialPortList;
 
-import com.vaavud.ars.SensorEvent;
-import com.vaavud.ars.SensorListener;
+import com.vaavud.sensor.SensorEvent;
+import com.vaavud.sensor.SensorListener;
 
 public class SerialPortController implements SerialPortEventListener{
 	

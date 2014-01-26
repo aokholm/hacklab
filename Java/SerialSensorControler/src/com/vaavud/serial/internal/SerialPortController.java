@@ -32,18 +32,22 @@ public class SerialPortController implements SerialPortEventListener{
 		this.listener = listener;
 	}
 	
-	public void start() {
+	public void start() throws Exception {
 		
 		if (listener == null) {
 			throw new RuntimeException("SerialPortController has zero listeners!");
 		}
 		
 		String[] portNames = SerialPortList.getPortNames();
-        for(int i = 0; i < portNames.length; i++){
-            System.out.println(portNames[i]);
-        }
+//        for(int i = 0; i < portNames.length; i++){
+//            System.out.println(portNames[i]);
+//        }
         
+        if (portNames.length == 0) {
+          throw new Exception("No Serial Device connected");
+        }
         serialPort = new SerialPort(portNames[0]); // chose first port
+        
         try {
             serialPort.openPort(); //Open serial port
             try {

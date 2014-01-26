@@ -13,7 +13,7 @@ public class SerialSensor extends BaseSensor {
 	}
 	
 	@Override
-	public void start() {
+	public void start() throws Exception {
 		serialPortController.start();
 	}
 	

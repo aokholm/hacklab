@@ -9,7 +9,7 @@ import jssc.SerialPortList;
 import com.vaavud.sensor.SensorEvent;
 import com.vaavud.sensor.SensorListener;
 
-public class SerialPortController implements SerialPortEventListener{
+public class SerialPortController implements SerialPortEventListener, SensorListener{
 	
 	private static SerialPortController instance;
 	private static SerialPort serialPort;
@@ -25,7 +25,7 @@ public class SerialPortController implements SerialPortEventListener{
     }
 	
 	private SerialPortController() {
-		analyser = new Analyser();
+		analyser = new Analyser(this);
 	}
 	
 	public void setListener(SensorListener listener) {
@@ -81,11 +81,7 @@ public class SerialPortController implements SerialPortEventListener{
 	public void serialEvent(SerialPortEvent arg0) {
 		try {
 			analyser.append(serialPort.readString());
-			SensorEvent event = analyser.readMeasurement();
-			
-			if (event != null) {
-				listener.newEvent(event);
-			}
+			analyser.readMeasurement();
 			
 		} catch (Exception e) {
 			closeConnection();
@@ -102,5 +98,10 @@ public class SerialPortController implements SerialPortEventListener{
 		} catch (SerialPortException e) {
 			e.printStackTrace();
 		}
+	}
+
+	@Override
+	public void newEvent(SensorEvent event) {
+		listener.newEvent(event);
 	}
 }

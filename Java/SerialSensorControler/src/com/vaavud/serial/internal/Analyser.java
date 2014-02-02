@@ -1,13 +1,18 @@
 package com.vaavud.serial.internal;
 
+import com.vaavud.sensor.Sensor;
+import com.vaavud.sensor.Sensor.Type;
 import com.vaavud.sensor.SensorEvent;
 import com.vaavud.sensor.SensorListener;
-import com.vaavud.sensor.SensorType;
 
 public class Analyser {
 	
 	private SensorListener listener;
 	private static StringBuffer stringBuffer;
+	private Sensor magSensor = new Sensor(Type.MAGNETIC_FIELD, "HMC5883L");
+	private Sensor accSensor = new Sensor(Type.ACCELEROMETER, "ADXL345");
+	private Sensor gyroSensor = new Sensor(Type.GYROSCOPE, "ITG3205");
+	private Sensor tempSensor = new Sensor(Type.TEMPERATURE, "ITG3205");
 	
 	public Analyser(SensorListener listener) {
 		stringBuffer = new StringBuffer();
@@ -41,21 +46,21 @@ public class Analyser {
 		switch (type) {
 		case 0: // magnetic field
 			values = new double[] {getNextValue(","), getNextValue(","), getNextValue("\n")};
-			event = new SensorEvent(SensorType.TYPE_MAGNETIC_FIELD, timeUs, values);
+			event = new SensorEvent(magSensor, timeUs, values);
 			listener.newEvent(event);
 			return;
 		case 1: // accelerometer
 			values = new double[] {getNextValue(","), getNextValue(","), getNextValue("\n")};
-			event = new SensorEvent(SensorType.TYPE_ACCELEROMETER, timeUs, values);
+			event = new SensorEvent(accSensor, timeUs, values);
 			listener.newEvent(event);
 			return;
 		case 2: // gyroscope
 			values = new double[] {getNextValue(","), getNextValue(","), getNextValue(","), getNextValue("\n")};
 			
-			event = new SensorEvent(SensorType.TYPE_GYROSCOPE, timeUs, new double[]{values[0], values[1], values[2]});
+			event = new SensorEvent(gyroSensor, timeUs, new double[]{values[0], values[1], values[2]});
 			listener.newEvent(event);
 			
-			event = new SensorEvent(SensorType.TYPE_TEMPERATURE, timeUs, new double[]{values[3]});
+			event = new SensorEvent(tempSensor, timeUs, new double[]{values[3]});
 			listener.newEvent(event);
 			return;
 		default:

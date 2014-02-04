@@ -3,6 +3,8 @@ package com.vaavud.serial.internal;
 import com.vaavud.sensor.Sensor;
 import com.vaavud.sensor.Sensor.Type;
 import com.vaavud.sensor.SensorEvent;
+import com.vaavud.sensor.SensorEvent1D;
+import com.vaavud.sensor.SensorEvent3D;
 import com.vaavud.sensor.SensorListener;
 
 public class Analyser {
@@ -46,21 +48,21 @@ public class Analyser {
 		switch (type) {
 		case 0: // magnetic field
 			values = new double[] {getNextValue(","), getNextValue(","), getNextValue("\n")};
-			event = new SensorEvent(magSensor, timeUs, values);
+			event = new SensorEvent3D(magSensor, timeUs, values);
 			listener.newEvent(event);
 			return;
 		case 1: // accelerometer
 			values = new double[] {getNextValue(","), getNextValue(","), getNextValue("\n")};
-			event = new SensorEvent(accSensor, timeUs, values);
+			event = new SensorEvent3D(accSensor, timeUs, values);
 			listener.newEvent(event);
 			return;
 		case 2: // gyroscope
 			values = new double[] {getNextValue(","), getNextValue(","), getNextValue(","), getNextValue("\n")};
 			
-			event = new SensorEvent(gyroSensor, timeUs, new double[]{values[0], values[1], values[2]});
+			event = new SensorEvent3D(gyroSensor, timeUs, new double[]{values[0], values[1], values[2]});
 			listener.newEvent(event);
 			
-			event = new SensorEvent(tempSensor, timeUs, new double[]{values[3]});
+			event = new SensorEvent1D(tempSensor, timeUs, values[3]);
 			listener.newEvent(event);
 			return;
 		default:

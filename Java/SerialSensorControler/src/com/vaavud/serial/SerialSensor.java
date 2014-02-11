@@ -20,7 +20,6 @@ public class SerialSensor extends BaseSensor {
 	@Override
 	public void stop() {
 		SerialPortController.closeConnection();
-
 	}
 
 	@Override

@@ -4,43 +4,43 @@ import com.vaavud.sensor.Sensor;
 import com.vaavud.sensor.Sensor.Type;
 import com.vaavud.sensor.SensorEvent3D;
 import com.vaavud.sensor.SensorListener;
+import com.vaavud.sensor.test.TestSensorConfig;
+import com.vaavud.sensor.test.TestType;
 
-public class EventGenerator {
+public abstract class EventGenerator {
     
-    private Sensor sensor;
+    private final Sensor sensor = new Sensor(Type.MAGNETIC_FIELD, "TestGenerator");
     private SensorListener listener;
-    private double Amp;
-    private double Freq;
-    private double SF;
-    private float endTime;
+    protected double amp = 1d;
+    protected TestType testType;
+    protected double freq;
+    protected double sf;
+    private double noiseLevel;
     
-    public EventGenerator() {
-        Amp = 10d;
-        Freq = 30d;
-        SF = 100d;
-        endTime = 30f;
-        sensor = new Sensor(Type.MAGNETIC_FIELD, "TestGenerator");
+    public EventGenerator(TestSensorConfig testSensorConfig) {
+        freq = testSensorConfig.getFreq();
+        sf = testSensorConfig.getSf();
+        testType = testSensorConfig.getTestType();
+        noiseLevel = testSensorConfig.getNoiseLevel();
     }
     
+    public abstract void start();
     
-    public void start() {
-        
-        long endTimeUs = (long) (endTime * 1_000_000);
-        long timeUs;
-        int rateUs = (int) (1/SF * 1_000_000);
-        
-        for (timeUs = 0; timeUs < endTimeUs; timeUs+=rateUs) {
-            newEvent(timeUs);
+    private void addNoise(double[] values) {
+        for(int i=0; i < values.length; i ++) {
+            values[i] = values[i] + noiseLevel * amp * (Math.random() * 2.0 - 1.0);
         }
     }
     
-    
-    public void newEvent(long timeUS) {
+    protected void newEvent(long timeUS, double angle) {
         
-        double x = Amp * Math.sin(Math.PI * 2 * timeUS / 1_000_000 * Freq);
-        double y = x;
-        double z = x;
-        listener.newEvent(new SensorEvent3D(sensor, timeUS, new double[]{x,y,z}));
+        double[] magVals = new double[3]; 
+        magVals[0] = amp * Math.sin(angle);
+        magVals[1] = amp * Math.sin(angle+Math.PI/2.0);
+        magVals[2] = amp * Math.sin(angle+3*Math.PI/4.0);
+        
+        addNoise(magVals);
+        listener.newEvent(new SensorEvent3D(sensor, timeUS, magVals));
     }
     
     public void setListener(SensorListener listener) {

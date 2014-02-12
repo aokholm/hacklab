@@ -9,7 +9,7 @@ public class TestSensor extends BaseSensor{
     private EventGenerator eventGenerator;
     
     public TestSensor() {
-        // TODO Auto-generated constructor stub
+        eventGenerator = new EventGenerator();
     }
     
     @Override

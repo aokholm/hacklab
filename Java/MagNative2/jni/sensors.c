@@ -24,6 +24,7 @@
 #define LOGI(...) ((void)__android_log_print(ANDROID_LOG_INFO, "native-activity", __VA_ARGS__))
 
 static jmethodID onReturnedStringID;
+static jmethodID onReturnedSensorValueID;
 static jobject handler = NULL;
 static JavaVM *jvm;
 static ASensorManager* sensorManager;
@@ -36,7 +37,8 @@ int64_t lastMagTime = 0;
 
 void setTheString(jstring str);
 static int get_sensor_events(int fd, int events, void* data);
-static void sendEvent(ASensorEvent event);
+static void sendEventAsString(ASensorEvent event);
+static void sendEventAsValues(ASensorEvent event);
 
 JNIEXPORT jstring JNICALL
 Java_com_vaavud_sensor_jni_Sensors_getSensorName( JNIEnv* env,
@@ -56,10 +58,11 @@ Java_com_vaavud_sensor_jni_Sensors_setListener( JNIEnv* env,
 	LOGI("INIT");
 
 	// SETUP CALLBACK
-//	jclass handlerClass = (*env)->FindClass(env, "com/vaavud/magnative2/MainActivity");
 	jclass handlerClass = (*env)->GetObjectClass(env, listenerObject);
 	if (handlerClass == NULL) {LOGI("Could not find class");}
 	onReturnedStringID = (*env)->GetMethodID(env, handlerClass, "onReturnedString", "(Ljava/lang/String;)V");
+	onReturnedSensorValueID = (*env)->GetMethodID(env, handlerClass, "onReturnedSensorValue", "(JFFF)V");
+
 	if (onReturnedStringID == NULL) { LOGI("Could not find method");}
 
     handler = (*env)->NewGlobalRef(env, listenerObject);
@@ -116,13 +119,13 @@ static int get_sensor_events(int fd, int events, void* data) {
   //ASensorEventQueue* sensorEventQueue;
   while (ASensorEventQueue_getEvents(sensorEventQueue, &event, 1) > 0) {
         if(event.type == ASENSOR_TYPE_MAGNETIC_FIELD) {
-        	sendEvent(event);
-
-			//LOGI("accl(x,y,z,t): %f %f %f %lld", event.acceleration.x, event.acceleration.y, event.acceleration.z, event.timestamp);
+//        	sendEventAsString(event);
+        	sendEventAsValues(event);
 			if(magCounter == 0 || magCounter == 100)
 				{
 				 LOGI("Mag-Time: %lld (%f)", event.timestamp,((double)(event.timestamp-lastMagTime))/1000000000.0);
 				 lastMagTime = event.timestamp;
+
 				 magCounter = 0;
 				}
 
@@ -134,7 +137,28 @@ static int get_sensor_events(int fd, int events, void* data) {
   return 1;
 }
 
-static void sendEvent(ASensorEvent event) {
+
+static void sendEventAsValues(ASensorEvent event) {
+	int status;
+	JNIEnv *env;
+	int isAttached = 0;
+
+	if (!handler) return;
+
+	if ((status = (*jvm)->GetEnv(jvm, (void**)&env, JNI_VERSION_1_6)) < 0) {
+		if ((status = (*jvm)->AttachCurrentThread(jvm, &env, NULL)) < 0) {
+			return;
+		}
+		isAttached = 1;
+	}
+
+	(*env)->CallVoidMethod(env, handler, onReturnedSensorValueID, (jlong) event.timestamp, (jfloat) event.acceleration.x, (jfloat) event.acceleration.y, (jfloat) event.acceleration.y);
+
+	if (isAttached) (*jvm)->DetachCurrentThread(jvm);
+}
+
+
+static void sendEventAsString(ASensorEvent event) {
 	int status;
 	JNIEnv *env;
 	int isAttached = 0;

@@ -2,6 +2,7 @@ package com.vaavud.magnative2;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.widget.TextView;
 
@@ -16,10 +17,7 @@ public class MainActivity extends Activity implements SensorsListener {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-//		Sensors sensors = new Sensors();
 		Sensors.setListener(this);
-//		nativeInit();
-//		setContentView(R.layout.activity_main);
 
         /* Create a TextView and set its content.
          * the text is retrieved by calling a native
@@ -52,10 +50,6 @@ public class MainActivity extends Activity implements SensorsListener {
 		Sensors.startSensors();
 	}
 	
-	
-//	private native void nativeInit();
-	
-	
     public void onReturnedString(String str) 
     { 
         /* Do something with the string */
@@ -63,7 +57,8 @@ public class MainActivity extends Activity implements SensorsListener {
     }
     
     public void onReturnedSensorValue(long timestamp, float x, float y, float z) {
-    	tv.setText(String.valueOf(x));
+    	
+    	tv.setText(String.format("accl(x,y,z,t): %f %f %f %d", x, y, z, timestamp));    	
     }
     
 }

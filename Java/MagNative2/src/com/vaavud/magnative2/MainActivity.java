@@ -6,15 +6,19 @@ import android.view.Menu;
 import android.widget.TextView;
 
 import com.example.magnative2.R;
+import com.vaavud.sensor.jni.Sensors;
+import com.vaavud.sensor.jni.SensorsListener;
 
-public class MainActivity extends Activity {
+public class MainActivity extends Activity implements SensorsListener {
 
 	TextView  tv;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		nativeInit();
+//		Sensors sensors = new Sensors();
+		Sensors.setListener(this);
+//		nativeInit();
 //		setContentView(R.layout.activity_main);
 
         /* Create a TextView and set its content.
@@ -22,10 +26,10 @@ public class MainActivity extends Activity {
          * function.
          */
         tv = new TextView(this);
-        tv.setText( getSensorName() );
+        tv.setText( Sensors.getSensorName() );
         setContentView(tv);
         
-        setString("Freaking Awesome!");
+        Sensors.setString("Freaking Awesome!");
         
     }
 
@@ -39,27 +43,19 @@ public class MainActivity extends Activity {
 	@Override
 	protected void onPause() {
 		super.onPause();
-		stopSensors();
+		Sensors.stopSensors();
 	}
 	
 	@Override
 	protected void onResume() {
 		super.onResume();
-		startSensors();
+		Sensors.startSensors();
 	}
 	
 	
-    /* A native method that is implemented by the
-     * 'hello-jni' native library, which is packaged
-     * with this application.
-     */
-    private native String getSensorName();
-	private native void nativeInit();
-	private native void startSensors();
-	private native void stopSensors();
-	private native void setString(String str);
+//	private native void nativeInit();
 	
-    
+	
     public void onReturnedString(String str) 
     { 
         /* Do something with the string */
@@ -69,11 +65,5 @@ public class MainActivity extends Activity {
     public void onReturnedSensorValue(long timestamp, float x, float y, float z) {
     	tv.setText(String.valueOf(x));
     }
-    
-	static {
-        System.loadLibrary("sensors");
-    }
-    
-    
     
 }

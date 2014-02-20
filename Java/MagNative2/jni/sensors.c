@@ -39,8 +39,8 @@ static int get_sensor_events(int fd, int events, void* data);
 static void sendEvent(ASensorEvent event);
 
 JNIEXPORT jstring JNICALL
-Java_com_vaavud_magnative2_MainActivity_getSensorName( JNIEnv* env,
-                                                  jobject thiz )
+Java_com_vaavud_sensor_jni_Sensors_getSensorName( JNIEnv* env,
+                                                  jclass cls )
 {
     const char* sensorName = ASensor_getName(magSensor);
 	jstring jstrSensorName = (*env)->NewStringUTF(env, sensorName);
@@ -50,18 +50,19 @@ Java_com_vaavud_magnative2_MainActivity_getSensorName( JNIEnv* env,
 
 
 JNIEXPORT void JNICALL
-Java_com_vaavud_magnative2_MainActivity_nativeInit( JNIEnv* env,
-                                                  jobject thiz ) {
+Java_com_vaavud_sensor_jni_Sensors_setListener( JNIEnv* env,
+                                                  jclass cls, jobject listenerObject ) {
 
 	LOGI("INIT");
 
 	// SETUP CALLBACK
-	jclass handlerClass = (*env)->FindClass(env, "com/vaavud/magnative2/MainActivity");
+//	jclass handlerClass = (*env)->FindClass(env, "com/vaavud/magnative2/MainActivity");
+	jclass handlerClass = (*env)->GetObjectClass(env, listenerObject);
 	if (handlerClass == NULL) {LOGI("Could not find class");}
 	onReturnedStringID = (*env)->GetMethodID(env, handlerClass, "onReturnedString", "(Ljava/lang/String;)V");
 	if (onReturnedStringID == NULL) { LOGI("Could not find method");}
 
-    handler = (*env)->NewGlobalRef(env, thiz);
+    handler = (*env)->NewGlobalRef(env, listenerObject);
 
 	jint rs = (*env)->GetJavaVM(env, &jvm);
 	assert (rs == JNI_OK);
@@ -74,8 +75,8 @@ Java_com_vaavud_magnative2_MainActivity_nativeInit( JNIEnv* env,
 
 
 JNIEXPORT void JNICALL
-Java_com_vaavud_magnative2_MainActivity_startSensors( JNIEnv* env,
-                                                  jobject thiz ) {
+Java_com_vaavud_sensor_jni_Sensors_startSensors( JNIEnv* env,
+                                                  jclass cls ) {
 
 	LOGI("startSensors()");
     ASensorEvent event;
@@ -105,7 +106,7 @@ Java_com_vaavud_magnative2_MainActivity_startSensors( JNIEnv* env,
 }
 
 JNIEXPORT void JNICALL
-Java_com_vaavud_magnative2_MainActivity_stopSensors(JNIEnv* env, jobject thiz) {
+Java_com_vaavud_sensor_jni_Sensors_stopSensors(JNIEnv* env, jclass cls) {
 	ASensorManager_destroyEventQueue(sensorManager, sensorEventQueue);
 }
 
@@ -180,8 +181,8 @@ void setTheString(jstring str) {
 }
 
 JNIEXPORT void JNICALL
-Java_com_vaavud_magnative2_MainActivity_setString( JNIEnv* env,
-                                                  jobject thiz,
+Java_com_vaavud_sensor_jni_Sensors_setString( JNIEnv* env,
+                                                  jclass cls,
                                                   jstring str) {
 	LOGI("setString");
 	setTheString(str);

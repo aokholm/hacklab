@@ -33,7 +33,7 @@ public class EventGeneratorFreq extends EventGenerator {
         freqPoints.add(new Point(1, 2));
         freqPoints.add(new Point(3, 1));
         freqPoints.add(new Point(5, 0.5));
-        freqPoints.add(new Point(1, 1.2));
+        freqPoints.add(new Point(6, 1.5));
         
         
     }
@@ -59,8 +59,8 @@ public class EventGeneratorFreq extends EventGenerator {
             
             // find relative position relative to current
             double relPos = (currentEndUs - timeUs) / (double) current.timeUs;
-            
             double freq = (prev.y-current.y)*relPos + current.y;
+            newFreqEvent(timeUs, freq);
             
             angle = angle + Math.PI*2 * freq * rateUs / 1_000_000.0;
             

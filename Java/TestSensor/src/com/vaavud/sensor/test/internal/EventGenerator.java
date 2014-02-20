@@ -3,6 +3,7 @@ package com.vaavud.sensor.test.internal;
 import com.vaavud.sensor.Sensor;
 import com.vaavud.sensor.Sensor.Type;
 import com.vaavud.sensor.SensorEvent3D;
+import com.vaavud.sensor.SensorEventFreq;
 import com.vaavud.sensor.SensorListener;
 import com.vaavud.sensor.test.TestSensorConfig;
 import com.vaavud.sensor.test.TestType;
@@ -10,6 +11,7 @@ import com.vaavud.sensor.test.TestType;
 public abstract class EventGenerator {
     
     private final Sensor sensor = new Sensor(Type.MAGNETIC_FIELD, "TestGenerator");
+    private final Sensor freqSensor = new Sensor(Type.FREQUENCY, "TestGenerator");
     private SensorListener listener;
     protected double amp = 1d;
     protected TestType testType;
@@ -30,6 +32,10 @@ public abstract class EventGenerator {
         for(int i=0; i < values.length; i ++) {
             values[i] = values[i] + noiseLevel * amp * (Math.random() * 2.0 - 1.0);
         }
+    }
+    
+    protected void newFreqEvent(long timeUs, double freq) {
+        listener.newEvent(new SensorEventFreq(freqSensor, timeUs, freq, amp, sf, amp/noiseLevel));
     }
     
     protected void newEvent(long timeUS, double angle) {

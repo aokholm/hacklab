@@ -1,1 +1,11 @@
 MANIFEST.MF
+Java/MagNative2/bin
+Java/MagNative2/.settings/org.eclipse.cdt.core.prefs
+Java/MagNative2/.settings/org.eclipse.jdt.core.prefs
+Java/MagNative2/.classpath
+Java/MagNative2/.cproject
+Java/MagNative2/.project
+Java/MagNative2/gen
+local.properties
+Java/MagNative2/libs
+Java/MagNative2/obj

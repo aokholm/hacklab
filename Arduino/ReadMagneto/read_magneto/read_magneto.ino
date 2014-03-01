@@ -18,35 +18,48 @@ Analog input 5 I2C SCL
 
 
 #define HMC5883_WriteAddress 0x1E //  i.e 0x3C >> 1
+#define HMC5883_ConfigurationRegisterA 0x00
+#define HMC5883_FastDataOutPutCommand 0x18
 #define HMC5883_ModeRegisterAddress 0x02
 #define HMC5883_ContinuousModeCommand 0x00
 #define HMC5883_DataOutputXMSBAddress  0x03
+
+int x,y,z; //triple axis data
+
 
 void setup(){
   //Initialize Serial and I2C communications
   Serial.begin(9600);
   Wire.begin();
   
+  // Register 0x00: CONFIG_A
+  // 75 Hz ODR (0x18)
+  Wire.beginTransmission(HMC5883_WriteAddress);
+  Wire.write(HMC5883_ConfigurationRegisterA);
+  Wire.write(HMC5883_FastDataOutPutCommand);
+  Wire.endTransmission();
+  delay(5);
+  
+  // Register 0x02: MODE
   //Put the HMC5883 IC into the correct operating mode
   Wire.beginTransmission(HMC5883_WriteAddress); //open communication with HMC5883
   Wire.write(HMC5883_ModeRegisterAddress); //select mode register
   Wire.write(HMC5883_ContinuousModeCommand); //continuous measurement mode
   Wire.endTransmission();
+  delay(5);
+  
+
 }
 
 void loop(){
-  
-  int x,y,z; //triple axis data
-
-  //Tell the HMC5883 where to begin reading data
+    //Tell the HMC5883 where to begin reading data
   Wire.beginTransmission(HMC5883_WriteAddress);
   Wire.write(0x03); //select register 3, X MSB register
-  
   Wire.endTransmission();
-  
+
+  Wire.requestFrom(HMC5883_WriteAddress, 6);
  
  //Read data from each axis, 2 registers per axis
-  Wire.requestFrom(HMC5883_WriteAddress, 6);
   if(6<=Wire.available()){
     x = Wire.read()<<8; //X msb
     x |= Wire.read(); //X lsb
@@ -54,16 +67,18 @@ void loop(){
     z |= Wire.read(); //Z lsb
     y = Wire.read()<<8; //Y msb
     y |= Wire.read(); //Y lsb
-  }
-  
-  
-  //Print out values of each axis
+    
+      //Print out values of each axis
   Serial.print("x: ");
   Serial.print(x);
   Serial.print("  y: ");
   Serial.print(y);
   Serial.print("  z: ");
   Serial.println(z);
+  }
   
-  delay(68);
+  
+
+  
+  delay(200);
 }

@@ -31,13 +31,61 @@ LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
 
 
 int x,y,z; //triple axis data
+int x_last, z_last;
+int tick;
+long ticks;
+long timediff;
 
+unsigned long freqTime;
+unsigned long freqTimeLast;
+unsigned long startTime;
+
+char maxStr[5];
+char avgStr[5];
+char actualStr[5];
+
+char xStr[6];
+char yStr[6];
+char zStr[6];
+char tickStr[6];
+char ticksStr[6];
+
+float freq;
+
+float maxi = 0.0;
+float avg = 0.0;
+float actual = 0.0;
+
+int led = 13;
+
+boolean usb = true;
 
 void setup(){
-  //Initialize Serial and I2C communications
-  Serial.begin(9600);
-  Wire.begin();
   
+  // check if 5 volt USB or 12 volt external power suply is connected
+  int sensorValue = analogRead(A0);
+  // Convert the analog reading (which goes from 0 - 1023) to a voltage (0 - 5V):
+  float voltage = sensorValue * (5.0 / 1023.0);
+  
+  if (voltage < 1.2 ) {
+    usb = true;
+  }
+  else {
+    usb = false;
+  }
+  pinMode(led, OUTPUT);
+  
+  //Initialize Serial and I2C communications
+  if (usb) {
+    digitalWrite(led, HIGH);
+    Serial.begin(115200);
+  }
+  else {
+    digitalWrite(led, LOW);
+  }
+  
+  
+  Wire.begin();
   // Register 0x00: CONFIG_A
   // 75 Hz ODR (0x18)
   Wire.beginTransmission(HMC5883_WriteAddress);
@@ -53,10 +101,18 @@ void setup(){
   Wire.write(HMC5883_ContinuousModeCommand); //continuous measurement mode
   Wire.endTransmission();
   
+  reset();
+  
   // set up the LCD's number of columns and rows: 
   lcd.begin(16, 2);
-
+  lcd.setCursor(0,0);
+  lcd.print("max:--.- av:--.-");
+  lcd.setCursor(0,1);
+  lcd.print("actual: --.- m/s");
+  
 }
+
+
 
 void loop(){
     //Tell the HMC5883 where to begin reading data
@@ -75,21 +131,109 @@ void loop(){
     y = Wire.read()<<8; //Y msb
     y |= Wire.read(); //Y lsb
     
-      //Print out values of each axis
-  Serial.print("x: ");
-  Serial.print(x);
-  Serial.print("  y: ");
-  Serial.print(y);
-  Serial.print("  z: ");
-  Serial.println(z);
-  
-  lcd.setCursor(0, 1);
-  lcd.print(x);
-  
+    
   }
   
+  // estimate tick // each tick resembles 1/2 rotation
   
-
+  if ((x >= 0 && x_last < 0 ) || (x <= 0 && x_last > 0) ) {
+   tick++;
+   ticks++;
+  }
+  if ((z >= 0 && z_last < 0 ) || (z <= 0 && z_last > 0) ) {
+   tick++;
+   ticks++;
+  }
   
+  x_last = x;
+  z_last = z;
+  
+  
+  freqTime = micros();
+  timediff = freqTime - freqTimeLast;
+  
+  if (timediff > 5000000) { // needs to do 2 rotations pr 5 seconds or it will reset
+    reset();
+  }
+  
+  if (tick >= 8) { // (8 ticks)
+    freq = 2000000 / (float) timediff; // 2 rotations times 1000000 (micro s to s)
+    updateInfo(freq);
+    
+    freqTimeLast = freqTime; 
+    tick-=8;
+  }
+  
+  if (usb) {
+    //Print out values of each axis
+    
+    sprintf(xStr, "%5i", x);
+    sprintf(yStr, "%5i", y);
+    sprintf(zStr, "%5i", z);
+    sprintf(tickStr, "%3i", tick);
+    sprintf(ticksStr, "%5i", ticks);
+    
+    Serial.print("x: ");
+    Serial.print(xStr);
+    Serial.print("  y: ");
+    Serial.print(yStr);
+    Serial.print("  z: ");
+    Serial.print(zStr);
+    Serial.print(" tick: ");
+    Serial.print(tickStr);  
+    Serial.print(" ticks: ");
+    Serial.println(ticksStr);    
+    
+  }
+    
   delay(14);
+}
+
+
+void reset() {
+  startTime = micros();
+  freqTimeLast = micros();
+  
+  x_last = 0;
+  z_last = 0;
+  tick = 0;
+  ticks = 0;
+  maxi = 0;
+  
+    // set up the LCD's number of columns and rows: 
+  lcd.setCursor(8,1);
+  lcd.print("--.-");
+}
+
+
+void updateInfo(float freq) {
+  if (freq > maxi) {
+    maxi = freq;
+  }
+  actual = freq;
+  
+  // 4 ticks pr revolution
+  avg = ticks * 1000000 / (float) (4 * (micros() - startTime));
+  
+  // display
+  // max:00.0 av:00.0
+  // actual: 00.0 m/s
+    
+  dtostrf(frequencyToWindspeed(maxi), 4, 1, maxStr);
+  dtostrf(frequencyToWindspeed(avg), 4, 1, avgStr);
+  dtostrf(frequencyToWindspeed(actual), 4, 1, actualStr);
+  
+  // print to LCD
+  lcd.setCursor(4, 0);
+  lcd.print(maxStr);
+  
+  lcd.setCursor(12, 0);
+  lcd.print(avgStr);
+  
+  lcd.setCursor(8, 1);
+  lcd.print(actualStr);
+}
+
+float frequencyToWindspeed(float freq) {
+  return 0.238 + 0.8910363 * freq; // 90 deg
 }

@@ -33,7 +33,11 @@ static ASensorEventQueue* sensorEventQueue;
 
 int magCounter = 0;
 int64_t lastMagTime = 0;
-
+int64_t lastlastMagTime = 0;
+static int32_t updateRateUs = 15625;
+//static int32_t updateRateUs = 10000;
+static int32_t updateRateNs = 0;
+static int32_t updateRateNs2 = 0;
 
 void setTheString(jstring str);
 static int get_sensor_events(int fd, int events, void* data);
@@ -73,6 +77,8 @@ Java_com_vaavud_sensor_jni_Sensors_setListener( JNIEnv* env,
     // SETUP SENSORS
     sensorManager = ASensorManager_getInstance();
     magSensor = ASensorManager_getDefaultSensor(sensorManager, ASENSOR_TYPE_MAGNETIC_FIELD);
+    updateRateNs2 = updateRateUs*2200; // (plus 10%)
+    updateRateNs = updateRateUs*1000;
 }
 
 
@@ -84,8 +90,7 @@ Java_com_vaavud_sensor_jni_Sensors_startSensors( JNIEnv* env,
 	LOGI("startSensors()");
     ASensorEvent event;
     int events, ident;
-    void* sensor_data = malloc(1000);
-
+    ident = 0;
     LOGI("startSensors() - ALooper_forThread()");
 
     ALooper* looper = ALooper_forThread();
@@ -95,14 +100,14 @@ Java_com_vaavud_sensor_jni_Sensors_startSensors( JNIEnv* env,
         looper = ALooper_prepare(ALOOPER_PREPARE_ALLOW_NON_CALLBACKS);
     }
 
-    sensorEventQueue = ASensorManager_createEventQueue(sensorManager, looper, 3, get_sensor_events, sensor_data);
+    sensorEventQueue = ASensorManager_createEventQueue(sensorManager, looper, ident, get_sensor_events, NULL);
 
     ASensorEventQueue_enableSensor(sensorEventQueue, magSensor);
 
-    //Sampling rate: 100Hz
     int minDelay = ASensor_getMinDelay(magSensor);
     LOGI("min-delay: %d", minDelay);
-    ASensorEventQueue_setEventRate(sensorEventQueue, magSensor, 10000);
+//    int32_t updateRateUs = 15625;
+    ASensorEventQueue_setEventRate(sensorEventQueue, magSensor, updateRateUs);
 
     LOGI("sensorValue() - START");
 
@@ -121,9 +126,16 @@ static int get_sensor_events(int fd, int events, void* data) {
         if(event.type == ASENSOR_TYPE_MAGNETIC_FIELD) {
 //        	sendEventAsString(event);
         	sendEventAsValues(event);
+        	int timediff = (event.timestamp-lastlastMagTime);
+        	if (timediff > updateRateNs2) {
+        		 LOGI("Measurements lost: %f", (float) timediff/(float) updateRateNs);
+        	}
+        	lastlastMagTime = event.timestamp;
+
+
 			if(magCounter == 0 || magCounter == 100)
 				{
-				 LOGI("Mag-Time: %lld (%f)", event.timestamp,((double)(event.timestamp-lastMagTime))/1000000000.0);
+				 LOGI("Mag-Time: %lld (%f)", event.timestamp,(100000000000.0/(double) (event.timestamp-lastMagTime)));
 				 lastMagTime = event.timestamp;
 
 				 magCounter = 0;

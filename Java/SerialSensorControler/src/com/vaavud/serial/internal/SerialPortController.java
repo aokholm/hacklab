@@ -69,12 +69,8 @@ public class SerialPortController implements SerialPortEventListener, SensorList
             System.out.println(e);
         }
         
-//		try {
-//        	Thread.sleep(10000); // timeout after 1 minute
-//        } catch (InterruptedException e) {
-//        	e.printStackTrace();
-//        }
-//        closeConnection();
+        System.out.println("SerialPort Connection Opened");
+        
 	}
 	
 	@Override
@@ -93,6 +89,7 @@ public class SerialPortController implements SerialPortEventListener, SensorList
 		
 		try {
     		if (serialPort.isOpened()) {
+    		    System.out.println("Closes SerialPort");
     			serialPort.closePort();
     		}
 		} catch (SerialPortException e) {

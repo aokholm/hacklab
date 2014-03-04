@@ -40,7 +40,7 @@ public class Analyser {
 		}
 		
 		long timeUs = getNextValue(",");
-		int type = getNextValue(",");
+		int type = (int) (long) getNextValue(",");
 		
 		double[] values = null;
 		SensorEvent event = null;
@@ -70,13 +70,19 @@ public class Analyser {
 		}
 	}
 	
-	private Integer getNextValue(String seperator) {
-		
-		int	sepIndex = stringBuffer.indexOf(seperator);
+	private Long getNextValue(String seperator) {
+
+	    int	sepIndex = stringBuffer.indexOf(seperator);
 		if (sepIndex != -1) {
-			int val = Integer.parseInt(stringBuffer.substring(0,sepIndex));
-			stringBuffer.delete(0, sepIndex+1);
-			return val;
+		    long value;
+		    try {
+		        value = Long.parseLong(stringBuffer.substring(0,sepIndex));
+            } catch (NumberFormatException e) {
+                stringBuffer.delete(0, sepIndex+1);
+                return null;
+            }
+		    stringBuffer.delete(0, sepIndex+1);
+			return value;
 		} else {
 			return null;
 		}

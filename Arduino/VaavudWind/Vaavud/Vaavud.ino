@@ -49,6 +49,7 @@ char yStr[6];
 char zStr[6];
 char tickStr[6];
 char ticksStr[6];
+char timeStr[6];
 
 float freq;
 
@@ -172,6 +173,7 @@ void loop(){
     sprintf(zStr, "%5i", z);
     sprintf(tickStr, "%3i", tick);
     sprintf(ticksStr, "%5i", ticks);
+    sprintf(timeStr, "%5i", ((micros() - startTime)/1000));
     
     Serial.print("x: ");
     Serial.print(xStr);
@@ -182,7 +184,9 @@ void loop(){
     Serial.print(" tick: ");
     Serial.print(tickStr);  
     Serial.print(" ticks: ");
-    Serial.println(ticksStr);    
+    Serial.print(ticksStr);
+    Serial.print(" time: ");
+    Serial.println(timeStr);    
     
   }
     
@@ -213,7 +217,7 @@ void updateInfo(float freq) {
   actual = freq;
   
   // 4 ticks pr revolution
-  avg = ticks * 1000000 / (float) (4 * (micros() - startTime));
+  avg = ticks / (float) (4 * (micros() - startTime)) * 1000000;
   
   // display
   // max:00.0 av:00.0

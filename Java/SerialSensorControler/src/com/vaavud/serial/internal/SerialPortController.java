@@ -15,6 +15,8 @@ public class SerialPortController implements SerialPortEventListener, SensorList
 	private static SerialPort serialPort;
 	private Analyser analyser;
 	private SensorListener listener = null;
+	private int serialEventCounter;
+	private int newEventCounter;
 	
 	public synchronized static SerialPortController getInstance()
     {   
@@ -34,6 +36,9 @@ public class SerialPortController implements SerialPortEventListener, SensorList
 	
 	public void start() throws Exception {
 		
+	    serialEventCounter = 0;
+	    newEventCounter = 0;
+	    
 		if (listener == null) {
 			throw new RuntimeException("SerialPortController has zero listeners!");
 		}
@@ -75,6 +80,10 @@ public class SerialPortController implements SerialPortEventListener, SensorList
 	
 	@Override
 	public void serialEvent(SerialPortEvent arg0) {
+	    if (serialEventCounter%1000 == 0) {
+	        System.out.println("SE: " + serialEventCounter);
+	    }
+	    serialEventCounter ++;
 		try {
 			analyser.append(serialPort.readString());
 			analyser.readMeasurement();
@@ -99,6 +108,16 @@ public class SerialPortController implements SerialPortEventListener, SensorList
 
 	@Override
 	public void newEvent(SensorEvent event) {
+	    if (newEventCounter%1000 == 0) {
+            System.out.println("NE: " + newEventCounter);
+        }
+        newEventCounter ++;
 		listener.newEvent(event);
 	}
+
+    public void stop() {
+        SerialPortController.closeConnection();
+        analyser.clearBuffer();
+        
+    }
 }

@@ -25,19 +25,33 @@ public class Analyser {
 		stringBuffer.append(serialString);
 	}
 	
+	public void clearBuffer() {
+	    System.out.println(stringBuffer.substring(0,stringBuffer.length()));
+	    stringBuffer.delete(0, stringBuffer.length());
+	}
+	
 	public void readMeasurement() throws Exception {
 		
 		// if no complete line return null 
 		if (stringBuffer.indexOf("\n") == -1) {
+		    System.out.println(stringBuffer);
 			return;
 		}
 		
-		// if no decimal, clear string and return null 
+		// if no decimal, clear string and return 
 		if (stringBuffer.indexOf(",") == -1){
+		    System.out.println(stringBuffer.substring(0,stringBuffer.indexOf("\n")));
 			stringBuffer.delete(0, stringBuffer.indexOf("\n"));
-			return;
-			
+			return;	
 		}
+		
+		// if there is a linebreak before the next decimal, clear line and return
+		if (stringBuffer.indexOf("\n") < stringBuffer.indexOf(",")) {
+		    System.out.println(stringBuffer.substring(0,stringBuffer.indexOf("\n")));
+		    stringBuffer.delete(0, stringBuffer.indexOf("\n"));
+		    return;
+		}
+		
 		
 		long timeUs = getNextValue(",");
 		int type = (int) (long) getNextValue(",");
@@ -47,9 +61,9 @@ public class Analyser {
 
 		switch (type) {
 		case 0: // magnetic field
-			values = new double[] {getNextValue(","), getNextValue(","), getNextValue("\n")};
-			event = new SensorEvent3D(magSensor, timeUs, values);
-			listener.newEvent(event);
+		    values = new double[] {getNextValue(","), getNextValue(","), getNextValue("\n")};
+            event = new SensorEvent3D(magSensor, timeUs, values);
+            listener.newEvent(event);
 			return;
 		case 1: // accelerometer
 			values = new double[] {getNextValue(","), getNextValue(","), getNextValue("\n")};
@@ -70,18 +84,12 @@ public class Analyser {
 		}
 	}
 	
-	private Long getNextValue(String seperator) {
+	private Long getNextValue(String seperator) throws NumberFormatException{
 
 	    int	sepIndex = stringBuffer.indexOf(seperator);
 		if (sepIndex != -1) {
-		    long value;
-		    try {
-		        value = Long.parseLong(stringBuffer.substring(0,sepIndex));
-            } catch (NumberFormatException e) {
-                stringBuffer.delete(0, sepIndex+1);
-                return null;
-            }
-		    stringBuffer.delete(0, sepIndex+1);
+		    long value = Long.parseLong(stringBuffer.substring(0,sepIndex));
+            stringBuffer.delete(0, sepIndex+1);
 			return value;
 		} else {
 			return null;

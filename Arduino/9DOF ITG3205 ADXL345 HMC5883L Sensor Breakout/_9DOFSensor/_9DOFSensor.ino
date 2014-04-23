@@ -9,7 +9,8 @@
 #define MAG_ADR (0x1E)
 #define ACC_ADR (0x53)
 
-enum { MAG, ACC, GYRO };
+//enum { MAG, ACC, GYRO };
+enum {ACC, MAG, GYRO };
 
 byte buff[8];
 

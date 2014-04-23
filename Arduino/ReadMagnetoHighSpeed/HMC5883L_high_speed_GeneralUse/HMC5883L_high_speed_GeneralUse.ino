@@ -55,11 +55,6 @@ void loop() {
 
       if ( !x_Up) {
         
-        // insert delay
-        //int delayMicro = interpolDelay( x_prev - x_avg - DIFF, dx - DIFF, SFmicro); 
-        //delayMicroseconds(delayMicro);
-        
-//        time += delayMicro;
         long diff = time-lastUp;
         float samples = diff/ (float) SFmicro;
         float freq = 1000000/ (float) diff;
@@ -75,12 +70,6 @@ void loop() {
     if (dx < -DIFF ) {
 
       if ( x_Up) {
-        
-        // insert delay
-        //int delayMicro = interpolDelay( x_prev - x_avg + DIFF, dx + DIFF, SFmicro); 
-        //delayMicroseconds(delayMicro);
-//        Serial.println(delayMicro);
-
         digitalWrite(led, LOW);
         digitalWrite(out, LOW);
         x_Up = false;

@@ -9,7 +9,7 @@ unsigned long readTime = 0;
 unsigned long lastUp = 0;
 
 
-int baseDelta = 250; // 250 mus ~ 4000Hz
+int baseDelta = 10; // 250 mus ~ 4000Hz
 
 void setup()
 {

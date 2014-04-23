@@ -60,12 +60,12 @@ public class Analyser {
 		SensorEvent event = null;
 
 		switch (type) {
-		case 0: // magnetic field
+		case 0: // magnetic field // SHOULD BE 0 !!!!
 		    values = new double[] {getNextValue(","), getNextValue(","), getNextValue("\n")};
             event = new SensorEvent3D(magSensor, timeUs, values);
             listener.newEvent(event);
 			return;
-		case 1: // accelerometer
+		case 1: // accelerometer // SHOULD BE 1 !!!!!
 			values = new double[] {getNextValue(","), getNextValue(","), getNextValue("\n")};
 			event = new SensorEvent3D(accSensor, timeUs, values);
 			listener.newEvent(event);

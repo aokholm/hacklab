@@ -77,7 +77,7 @@ void loop(){
     }
     
     if (ticks == 1) {
-      Serial.println("START");
+      Serial.print("START\n");
     }
     
     if (ticks > 0) {
@@ -86,7 +86,8 @@ void loop(){
       // to Android
       Serial.print(time - startTime);
       Serial.print(",");
-      Serial.println(freq);
+      Serial.print(freq, 4);
+      Serial.print("\n");
       
       updateInfo(freq);
       timeLast = time; 
@@ -107,7 +108,7 @@ void loop(){
       if (ticks > 1) {
         clearCurrent();
         ticks = 0;
-        Serial.println("END");
+        Serial.print("END\n");
       }
     }
   }
